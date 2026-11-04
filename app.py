@@ -3,7 +3,7 @@ from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
 
-KEY = os.getenv("GROQ_KEY", "")
+KEY ="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"
 URL = "https://api.groq.com/openai/v1/chat/completions"
 
 app = FastAPI()
