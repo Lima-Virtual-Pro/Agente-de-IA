@@ -3,7 +3,14 @@ from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
 
-KEY ="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"
+# COLE SUA CHAVE AQUI EMBAIXO, SEM ESPAÇOS
+KEY = "import os, httpx, sympy, re
+from fastapi import FastAPI
+from fastapi.responses import HTMLResponse
+from pydantic import BaseModel
+
+# COLE SUA CHAVE AQUI EMBAIXO, SEM ESPAÇOS
+KEY = "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"
 URL = "https://api.groq.com/openai/v1/chat/completions"
 
 app = FastAPI()
@@ -67,10 +74,15 @@ def raiz():
 async def perguntar(b: P):
     q = b.pergunta
     try:
+        # Teste de cálculo local
         num = re.search(r"[\d\s\+\-\*/\(\)\.]+", q)
         if num and any(op in num.group(0) for op in "+-*/"):
             try: return {"resposta": f"{sympy.sympify(num.group(0).strip())}"}
             except: pass
+        
+        # Verifica se a chave foi colada
+        if not KEY or "COLE_SUA_CHAVE" in KEY:
+            return {"resposta": "ERRO: A chave não foi colada corretamente no código."}
         
         headers = {"Authorization": f"Bearer {KEY}", "Content-Type": "application/json"}
         body = {
@@ -83,9 +95,107 @@ async def perguntar(b: P):
         
         async with httpx.AsyncClient(timeout=60) as c:
             r = await c.post(URL, headers=headers, json=body)
-            r.raise_for_status()
+            
+            # Se a Groq der erro, nós mostramos o erro exato na tela!
+            if r.status_code != 200:
+                return {"resposta": f"Erro da Groq: {r.status_code} - {r.text}"}
+                
             resposta = r.json()["choices"][0]["message"]["content"]
             return {"resposta": resposta}
             
     except Exception as e:
-        return {"resposta": f"Erro: {e}"}
+        return {"resposta": f"Erro no Python: {e}"}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"
+URL = "https://api.groq.com/openai/v1/chat/completions"
+
+app = FastAPI()
+
+class P(BaseModel):
+    pergunta: str
+
+HTML = """
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Agente</title>
+<style>
+*{box-sizing:border-box;margin:0}
+body{font-family:system-ui;background:#0f172a;color:#e2e8f0;display:flex;flex-direction:column;height:100dvh}
+header{padding:1rem;background:#1e293b;text-align:center;font-weight:600}
+#chat{flex:1;overflow-y:auto;padding:1rem;display:flex;flex-direction:column;gap:.75rem}
+.msg{max-width:85%;padding:.75rem 1rem;border-radius:1rem;line-height:1.4;white-space:pre-wrap}
+.user{align-self:flex-end;background:#2563eb}
+.bot{align-self:flex-start;background:#334155}
+form{display:flex;gap:.5rem;padding:.75rem;background:#1e293b}
+input{flex:1;padding:.75rem;border-radius:.75rem;border:none;background:#0f172a;color:#e2e8f0;font-size:16px}
+button{padding:.75rem 1rem;border-radius:.75rem;border:none;background:#2563eb;color:#fff;font-weight:600}
+button:disabled{opacity:.5}
+</style>
+</head>
+<body>
+<header>🤖 Agente</header>
+<div id="chat"></div>
+<form id="form">
+<input id="pergunta" placeholder="Pergunte algo..." autocomplete="off" required>
+<button id="enviar" type="submit">Enviar</button>
+</form>
+<script>
+const chat=document.getElementById("chat");
+const form=document.getElementById("form");
+const input=document.getElementById("pergunta");
+const btn=document.getElementById("enviar");
+function add(tipo,txt){const d=document.createElement("div");d.className="msg "+tipo;d.textContent=txt;chat.appendChild(d);chat.scrollTop=chat.scrollHeight;}
+form.addEventListener("submit",async(e)=>{
+  e.preventDefault();const q=input.value.trim();if(!q)return;
+  add("user",q);input.value="";btn.disabled=true;add("bot","...");
+  const ph=chat.lastChild;
+  try{
+    const r=await fetch("/perguntar",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({pergunta:q})});
+    const d=await r.json();ph.textContent=d.resposta;
+  }catch(err){ph.textContent="Erro de conexão.";}finally{btn.disabled=false;input.focus();}
+});
+</script>
+</body>
+</html>
+"""
+
+@app.get("/", response_class=HTMLResponse)
+def raiz():
+    return HTML
+
+@app.post("/perguntar")
+async def perguntar(b: P):
+    q = b.pergunta
+    try:
+        # Teste de cálculo local
+        num = re.search(r"[\d\s\+\-\*/\(\)\.]+", q)
+        if num and any(op in num.group(0) for op in "+-*/"):
+            try: return {"resposta": f"{sympy.sympify(num.group(0).strip())}"}
+            except: pass
+        
+        # Verifica se a chave foi colada
+        if not KEY or "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" in KEY:
+            return {"resposta": "ERRO: A chave não foi colada corretamente no código."}
+        
+        headers = {"Authorization": f"Bearer {KEY}", "Content-Type": "application/json"}
+        body = {
+            "model": "llama-3.3-70b-versatile",
+            "messages": [
+                {"role": "system", "content": "Você é um assistente útil. Responda em português, curto e direto."},
+                {"role": "user", "content": q}
+            ]
+        }
+        
+        async with httpx.AsyncClient(timeout=60) as c:
+            r = await c.post(URL, headers=headers, json=body)
+            
+            # Se a Groq der erro, nós mostramos o erro exato na tela!
+            if r.status_code != 200:
+                return {"resposta": f"Erro da Groq: {r.status_code} - {r.text}"}
+                
+            resposta = r.json()["choices"][0]["message"]["content"]
+            return {"resposta": resposta}
+            
+    except Exception as e:
+        return {"resposta": f"Erro no Python: {e}"}
