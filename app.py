@@ -1,10 +1,10 @@
 import os, httpx, sympy, re
 from fastapi import FastAPI
-from fastapi.responses import FileResponse, HTMLResponse
+from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
 
-KEY = os.getenv("GEMINI_KEY", "")
-URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent"
+KEY = os.getenv("GROQ_KEY", "")
+URL = "https://api.groq.com/openai/v1/chat/completions"
 
 app = FastAPI()
 
@@ -59,13 +59,6 @@ form.addEventListener("submit",async(e)=>{
 </html>
 """
 
-async def gemini(prompt: str, system: str) -> str:
-    body = {"contents": [{"parts": [{"text": prompt}]}], "systemInstruction": {"parts": [{"text": system}]}}
-    async with httpx.AsyncClient(timeout=60) as c:
-        r = await c.post(f"{URL}?key={KEY}", json=body)
-        r.raise_for_status()
-        return r.json()["candidates"][0]["content"]["parts"][0]["text"].strip()
-
 @app.get("/", response_class=HTMLResponse)
 def raiz():
     return HTML
@@ -78,8 +71,21 @@ async def perguntar(b: P):
         if num and any(op in num.group(0) for op in "+-*/"):
             try: return {"resposta": f"{sympy.sympify(num.group(0).strip())}"}
             except: pass
-        system = "Você é um assistente útil. Responda em português, curto e direto."
-        resposta = await gemini(q, system)
-        return {"resposta": resposta}
+        
+        headers = {"Authorization": f"Bearer {KEY}", "Content-Type": "application/json"}
+        body = {
+            "model": "llama-3.3-70b-versatile",
+            "messages": [
+                {"role": "system", "content": "Você é um assistente útil. Responda em português, curto e direto."},
+                {"role": "user", "content": q}
+            ]
+        }
+        
+        async with httpx.AsyncClient(timeout=60) as c:
+            r = await c.post(URL, headers=headers, json=body)
+            r.raise_for_status()
+            resposta = r.json()["choices"][0]["message"]["content"]
+            return {"resposta": resposta}
+            
     except Exception as e:
         return {"resposta": f"Erro: {e}"}
